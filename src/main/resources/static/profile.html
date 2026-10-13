@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container" style="max-width:800px;">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">👨‍🎓 Student Profile</h1>
+                <p class="page-subtitle">Your academic details, enrollment record, and learning telemetry.</p>
+            </div>
+            <div>
+                <button onclick="App.logout()" class="btn btn-secondary btn-sm" style="color:var(--status-wrong);">Sign Out</button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1.5rem;">
+            <div style="display:flex;align-items:center;gap:1.5rem;border-bottom:1px solid var(--border-subtle);padding-bottom:1.5rem;margin-bottom:1.5rem;">
+                <div style="width:72px;height:72px;background:linear-gradient(135deg, var(--accent-purple), var(--accent-primary));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fff;">
+                    <span id="prof-avatar-letter">S</span>
+                </div>
+                <div>
+                    <h2 id="prof-name" style="color:#fff;font-size:1.4rem;">Student Name</h2>
+                    <div id="prof-email" style="color:var(--text-secondary);font-size:0.92rem;">student@college.edu</div>
+                    <span class="badge badge-topic" style="margin-top:0.4rem;">Enrolled Student</span>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">College / University</div>
+                    <div id="prof-college" style="font-size:1rem;color:#fff;margin-top:0.25rem;">Stanford Institute of Tech</div>
+                </div>
+
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Branch / Department</div>
+                    <div id="prof-branch" style="font-size:1rem;color:#fff;margin-top:0.25rem;">Computer Science</div>
+                </div>
+
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Graduation Year</div>
+                    <div id="prof-gradyear" style="font-size:1rem;color:#fff;margin-top:0.25rem;">2025</div>
+                </div>
+
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;">Account Status</div>
+                    <div style="font-size:1rem;color:var(--accent-emerald);margin-top:0.25rem;">Active • AI Analytics Enabled</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>Quick Navigation</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;">
+                <a href="/dashboard" class="btn btn-secondary" style="justify-content:flex-start;">📊 Dashboard</a>
+                <a href="/problems" class="btn btn-secondary" style="justify-content:flex-start;">💻 Practice Problems</a>
+                <a href="/analysis" class="btn btn-secondary" style="justify-content:flex-start;">🧠 Coding Analysis</a>
+                <a href="/recommendations" class="btn btn-secondary" style="justify-content:flex-start;">🎯 Recommendations</a>
+                <a href="/improvement" class="btn btn-secondary" style="justify-content:flex-start;">📈 Improvement Tracker</a>
+                <a href="/submissions" class="btn btn-secondary" style="justify-content:flex-start;">📜 Submission History</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('profile');
+
+            document.getElementById('prof-name').innerText = user.name || 'Student';
+            document.getElementById('prof-avatar-letter').innerText = (user.name || 'S').charAt(0).toUpperCase();
+            document.getElementById('prof-email').innerText = user.email || '';
+            document.getElementById('prof-college').innerText = user.college || 'Engineering Institute';
+            document.getElementById('prof-branch').innerText = user.branch || 'Computer Science & Engineering';
+            document.getElementById('prof-gradyear').innerText = user.graduationYear || '2026';
+        });
+    </script>
+</body>
+</html>

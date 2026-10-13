@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improvement Tracking - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">📈 Improvement Tracking</h1>
+                <p class="page-subtitle">Visual comparison of your coding performance before vs after adaptive AI practice intervention.</p>
+            </div>
+            <div>
+                <a href="/problems" class="btn btn-primary">Continue Practice →</a>
+            </div>
+        </div>
+
+        <!-- Metric Progression Chart Card -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-title">
+                <span>Before vs After Practice Accuracy Growth</span>
+                <span id="overall-growth-tag" class="badge badge-accepted" style="font-size:0.85rem;">+0% Average Gain</span>
+            </div>
+            <div style="height: 320px; position: relative;">
+                <canvas id="improvementBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Comparative Topic Cards -->
+        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 1.25rem;">
+            Topic Performance Evolution
+        </h2>
+
+        <div id="topic-cards-container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:1.5rem;">
+            <div style="text-align:center;padding:3rem;color:var(--text-muted);">
+                Calculating improvement metrics...
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/charts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('improvement');
+            await loadImprovementData(user.id);
+        });
+
+        async function loadImprovementData(studentId) {
+            try {
+                const report = await App.request(`/improvement/student/${studentId}`);
+                renderImprovementData(report);
+            } catch (err) {
+                App.showToast('Failed to load improvement tracking: ' + err.message, 'error');
+            }
+        }
+
+        function renderImprovementData(report) {
+            document.getElementById('overall-growth-tag').innerText = `+${report.overallImprovementRate}% Average Accuracy Gain`;
+
+            // Chart
+            if (report.topicImprovements && report.topicImprovements.length > 0) {
+                DsaCharts.renderImprovementChart('improvementBarChart', report.topicImprovements);
+            }
+
+            // Cards
+            const container = document.getElementById('topic-cards-container');
+            let html = '';
+
+            report.topicImprovements.forEach(card => {
+                html += `
+                    <div style="background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-md);padding:1.5rem;box-shadow:var(--shadow-md);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--border-subtle);padding-bottom:0.75rem;">
+                            <span style="font-size:1.15rem;font-weight:700;color:#fff;">${card.topicName}</span>
+                            <span class="badge badge-accepted" style="font-size:0.85rem;font-weight:700;">
+                                +${card.accuracyGain}% Growth
+                            </span>
+                        </div>
+
+                        <!-- Before vs After Comparison Grid -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                            <!-- Before Practice -->
+                            <div style="background:rgba(244,63,94,0.06);border:1px solid rgba(244,63,94,0.2);padding:0.85rem;border-radius:6px;">
+                                <div style="font-size:0.75rem;font-weight:700;color:var(--accent-rose);text-transform:uppercase;margin-bottom:0.5rem;">
+                                    🔴 BEFORE PRACTICE
+                                </div>
+                                <div style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;">
+                                    <div>Accuracy: <b style="color:#fff;">${card.preAccuracy}%</b></div>
+                                    <div>Avg Attempts: <b style="color:#fff;">${card.preAvgAttempts}</b></div>
+                                    <div>Mistakes Logged: <b style="color:var(--accent-rose);">${card.preMistakeCount}</b></div>
+                                </div>
+                            </div>
+
+                            <!-- After Practice -->
+                            <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);padding:0.85rem;border-radius:6px;">
+                                <div style="font-size:0.75rem;font-weight:700;color:var(--accent-emerald);text-transform:uppercase;margin-bottom:0.5rem;">
+                                    🟢 AFTER PRACTICE
+                                </div>
+                                <div style="font-size:0.88rem;color:var(--text-secondary);line-height:1.6;">
+                                    <div>Accuracy: <b style="color:var(--accent-emerald);">${card.postAccuracy}%</b></div>
+                                    <div>Avg Attempts: <b style="color:#fff;">${card.postAvgAttempts}</b></div>
+                                    <div>Mistakes Logged: <b style="color:var(--accent-emerald);">${card.postMistakeCount}</b></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="font-size:0.82rem;color:var(--text-muted);background:var(--bg-secondary);padding:0.65rem 0.85rem;border-radius:4px;border:1px solid var(--border-subtle);">
+                            <b>Key Bottleneck Overcome:</b> ${card.recurringMistakeSummary}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

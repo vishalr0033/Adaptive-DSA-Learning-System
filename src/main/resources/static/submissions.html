@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission History - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">Submission History</h1>
+                <p class="page-subtitle">Detailed record of every Java code execution, attempt number, error logs, and AI mistake classifications.</p>
+            </div>
+            <div>
+                <a href="/problems" class="btn btn-primary">Solve More Problems →</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">ID</th>
+                        <th>Problem Title</th>
+                        <th>Topic</th>
+                        <th>Status / Result</th>
+                        <th>Attempt</th>
+                        <th>Runtime</th>
+                        <th>Mistake Classification</th>
+                        <th>Date</th>
+                        <th style="text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="submissions-tbody">
+                    <tr>
+                        <td colspan="9" style="text-align:center;padding:3rem;color:var(--text-muted);">
+                            Loading submission records...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Submission Detail Modal -->
+    <div id="sub-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--border-card);padding-bottom:0.75rem;">
+                <h3 id="modal-title" style="color:#fff;font-size:1.15rem;">Submission Details</h3>
+                <button onclick="closeModal()" class="btn btn-secondary btn-sm" style="border-radius:50%;width:30px;height:30px;padding:0;">✕</button>
+            </div>
+
+            <div id="modal-body">
+                <!-- Modal details -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('submissions');
+            await loadSubmissions(user.id);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewId = urlParams.get('id');
+            if (viewId) {
+                inspectSubmission(viewId);
+            }
+        });
+
+        async function loadSubmissions(studentId) {
+            try {
+                const subs = await App.request(`/submissions/student/${studentId}`);
+                renderSubmissions(subs);
+            } catch (err) {
+                App.showToast('Failed to load submissions: ' + err.message, 'error');
+            }
+        }
+
+        function renderSubmissions(subs) {
+            const tbody = document.getElementById('submissions-tbody');
+            if (!subs || subs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--text-muted);">No submissions recorded yet. Go to Practice Problems and submit your first solution!</td></tr>';
+                return;
+            }
+
+            let html = '';
+            subs.forEach(s => {
+                const isAcc = s.status === 'ACCEPTED';
+                let statusClass = 'badge-wrong';
+                if (s.status === 'ACCEPTED') statusClass = 'badge-accepted';
+                if (s.status === 'SUBOPTIMAL_APPROACH') statusClass = 'badge-suboptimal';
+                if (s.status === 'COMPILATION_ERROR') statusClass = 'badge-compile';
+                if (s.status === 'TIME_LIMIT_EXCEEDED') statusClass = 'badge-tle';
+                if (s.status === 'RESTRICTION_ERROR') statusClass = 'badge-restriction';
+
+                const formattedDate = new Date(s.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+
+                html += `
+                    <tr>
+                        <td style="color:var(--text-muted);font-weight:600;">#${s.id}</td>
+                        <td>
+                            <a href="/editor?id=${s.problemId}" style="font-weight:600;color:#fff;">
+                                ${s.problemTitle ? '#' + s.problemId + ' ' + s.problemTitle : 'Problem #' + s.problemId}
+                            </a>
+                        </td>
+                        <td><span class="badge badge-topic">${s.topic}</span></td>
+                        <td><span class="badge ${statusClass}">${s.status.replace('_', ' ')}</span></td>
+                        <td>Attempt #${s.attemptNumber || 1}</td>
+                        <td style="font-family:var(--font-mono);font-size:0.85rem;">${s.executionTimeMs || 0} ms</td>
+                        <td>
+                            ${s.hasMistakeAnalysis ? `
+                                <span class="badge" style="background:rgba(139,92,246,0.15);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3);">
+                                    ${s.mistakeCategory}
+                                </span>
+                            ` : '<span style="color:var(--text-muted);">-</span>'}
+                        </td>
+                        <td style="color:var(--text-muted);font-size:0.82rem;">${formattedDate}</td>
+                        <td style="text-align:right;">
+                            <button onclick="inspectSubmission(${s.id})" class="btn btn-secondary btn-sm">
+                                View Code 🔍
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        async function inspectSubmission(id) {
+            try {
+                const sub = await App.request(`/submissions/${id}`);
+                const modal = document.getElementById('sub-modal');
+                const title = document.getElementById('modal-title');
+                const body = document.getElementById('modal-body');
+
+                title.innerText = `Submission #${sub.id} - ${sub.problemTitle || 'Problem'}`;
+
+                let mistakeHtml = '';
+                if (sub.hasMistakeAnalysis) {
+                    mistakeHtml = `
+                        <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);padding:1rem;border-radius:6px;margin-bottom:1rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                                <div style="font-weight:700;color:var(--accent-purple);">🤖 AI Mistake Diagnosis: ${sub.mistakeCategory}</div>
+                                ${sub.isRecurring ? '<span class="badge badge-wrong">🔄 Repeated ' + sub.occurrenceCount + 'x</span>' : ''}
+                            </div>
+                            <div style="color:#fff;font-size:0.9rem;font-weight:600;margin-bottom:0.35rem;">${sub.specificMistake}</div>
+                            <div style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:0.5rem;"><b>Why:</b> ${sub.explanation}</div>
+                            ${sub.suggestedFix ? `<div style="color:#34d399;font-size:0.85rem;">💡 <b>Fix:</b> ${sub.suggestedFix}</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                body.innerHTML = `
+                    <div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:0.85rem;color:var(--text-muted);">
+                        <span>Status: <b style="color:#fff;">${sub.status}</b></span>
+                        <span>Execution Time: <b style="color:#fff;">${sub.executionTimeMs} ms</b></span>
+                        <span>Attempt: <b style="color:#fff;">#${sub.attemptNumber}</b></span>
+                    </div>
+
+                    ${mistakeHtml}
+
+                    <div style="margin-bottom:0.5rem;font-weight:600;color:var(--text-secondary);font-size:0.85rem;">Submitted Java Code:</div>
+                    <pre style="background:#090d16;padding:1rem;border-radius:6px;border:1px solid var(--border-card);color:#e2e8f0;font-family:var(--font-mono);font-size:0.88rem;overflow-x:auto;max-height:300px;">${escapeHtml(sub.submittedCode)}</pre>
+
+                    ${sub.compilerError ? `
+                        <div style="margin-top:1rem;background:rgba(245,158,11,0.1);padding:0.85rem;border-radius:6px;border:1px solid rgba(245,158,11,0.3);color:#fbbf24;font-family:var(--font-mono);font-size:0.85rem;">
+                            <b>Error Details:</b><br>${escapeHtml(sub.compilerError)}
+                        </div>
+                    ` : ''}
+                `;
+
+                modal.style.display = 'flex';
+            } catch (err) {
+                App.showToast('Failed to fetch submission details: ' + err.message, 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('sub-modal').style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>

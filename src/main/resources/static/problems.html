@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Problems - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">DSA Practice Problems</h1>
+                <p class="page-subtitle">Choose from 30+ curated DSA coding problems spanning all 14 core computer science topics.</p>
+            </div>
+            <div>
+                <a href="/recommendations" class="btn btn-secondary">🎯 View AI Recommended Path</a>
+            </div>
+        </div>
+
+        <!-- Filter and Search Controls -->
+        <div class="filter-bar">
+            <input type="text" id="filter-search" class="form-control search-input" placeholder="🔍 Search problems by title or keyword...">
+            
+            <select id="filter-topic" class="form-control" style="width: auto; min-width: 180px;">
+                <option value="ALL">All 14 DSA Topics</option>
+                <option value="ARRAYS">Arrays</option>
+                <option value="STRINGS">Strings</option>
+                <option value="HASHMAP">HashMap</option>
+                <option value="STACK">Stack</option>
+                <option value="QUEUE">Queue</option>
+                <option value="LINKED_LIST">Linked List</option>
+                <option value="RECURSION">Recursion</option>
+                <option value="BINARY_SEARCH">Binary Search</option>
+                <option value="SLIDING_WINDOW">Sliding Window</option>
+                <option value="TWO_POINTER">Two Pointer</option>
+                <option value="SORTING">Sorting</option>
+                <option value="TREES">Trees</option>
+                <option value="GRAPHS">Graphs</option>
+                <option value="DYNAMIC_PROGRAMMING">Dynamic Programming</option>
+            </select>
+
+            <select id="filter-difficulty" class="form-control" style="width: auto; min-width: 140px;">
+                <option value="ALL">All Difficulties</option>
+                <option value="EASY">Easy</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HARD">Hard</option>
+            </select>
+        </div>
+
+        <!-- Problem Table -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Problem Title</th>
+                        <th style="width:180px;">DSA Topic</th>
+                        <th style="width:120px;">Difficulty</th>
+                        <th style="width:130px;text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="problems-tbody">
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted);">
+                            Loading problems...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/kiwi.js"></script>
+    <script>
+        let allProblems = [];
+        let solvedIds = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('problems');
+            await loadProblems();
+
+            document.getElementById('filter-search').addEventListener('input', applyFilters);
+            document.getElementById('filter-topic').addEventListener('change', applyFilters);
+            document.getElementById('filter-difficulty').addEventListener('change', applyFilters);
+        });
+
+        async function loadProblems() {
+            try {
+                const user = App.getUser();
+                allProblems = await App.request('/problems');
+                
+                // Fetch user submissions to tag solved problems
+                if (user) {
+                    const subs = await App.request(`/submissions/student/${user.id}`);
+                    solvedIds = subs.filter(s => s.status === 'ACCEPTED').map(s => s.problemId);
+                }
+
+                renderProblems(allProblems);
+            } catch (err) {
+                App.showToast('Failed to load problems: ' + err.message, 'error');
+            }
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('filter-search').value.toLowerCase();
+            const topic = document.getElementById('filter-topic').value;
+            const diff = document.getElementById('filter-difficulty').value;
+
+            const filtered = allProblems.filter(p => {
+                const matchSearch = p.title.toLowerCase().includes(search) || p.description.toLowerCase().includes(search);
+                const matchTopic = (topic === 'ALL') || (p.topic === topic) || (p.alternativeTopics && p.alternativeTopics.includes(topic));
+                const matchDiff = (diff === 'ALL') || (p.difficulty === diff);
+                return matchSearch && matchTopic && matchDiff;
+            });
+
+            renderProblems(filtered);
+        }
+
+        function renderProblems(problems) {
+            const tbody = document.getElementById('problems-tbody');
+            if (!problems || problems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:3rem;color:var(--text-muted);">No problems found matching your filter criteria.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            problems.forEach((p, idx) => {
+                const isSolved = solvedIds.includes(p.id);
+                const diffBadge = `<span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span>`;
+                const topicName = p.topic ? p.topic.replace('_', ' ') : 'General';
+                
+                const altBadges = (p.alternativeTopics && p.alternativeTopics.trim().length > 0)
+                    ? p.alternativeTopics.split(',').map(at => {
+                        const trimmed = at.trim();
+                        return trimmed ? `<span class="badge" style="background:rgba(255,255,255,0.08);color:#94a3b8;font-size:0.7rem;padding:0.2rem 0.45rem;">${trimmed.replace('_', ' ')}</span>` : '';
+                    }).join(' ')
+                    : '';
+
+                html += `
+                    <tr>
+                        <td style="color:var(--accent-cyan);font-weight:700;">#${p.id}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <a href="/editor?id=${p.id}" style="font-weight:600;font-size:0.95rem;color:#fff;">
+                                    <span style="color:var(--text-muted);font-weight:600;margin-right:0.35rem;">${p.id}.</span>${p.title}
+                                </a>
+                                ${isSolved ? '<span title="Solved" style="color:var(--status-accepted);font-size:0.85rem;">✅</span>' : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.35rem;align-items:center;">
+                                <span class="badge badge-topic">${topicName}</span>
+                                ${altBadges}
+                            </div>
+                        </td>
+                        <td>${diffBadge}</td>
+                        <td style="text-align:right;">
+                            <a href="/editor?id=${p.id}" class="btn btn-primary btn-sm">
+                                ${isSolved ? 'Review' : 'Solve →'}
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

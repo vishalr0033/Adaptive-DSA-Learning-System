@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Coding Analysis - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">🧠 My Coding Analysis</h1>
+                <p class="page-subtitle">AI-driven diagnosis of your recurring coding mistakes, conceptual bottlenecks, and targeted mastery advice.</p>
+            </div>
+            <div>
+                <a href="/recommendations" class="btn btn-primary">🎯 Go to Adaptive Practice →</a>
+            </div>
+        </div>
+
+        <!-- High-Level AI Summary Card -->
+        <div style="background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(59,130,246,0.1)); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <div style="width:40px;height:40px;border-radius:50%;background:rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+                        🤖
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Personalized Diagnostic Summary</h2>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Synthesized across all your Java submissions and compiler telemetry</div>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:1.5rem;">
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;">Overall Accuracy</div>
+                        <div id="summary-acc" style="font-size:1.35rem;font-weight:800;color:var(--accent-cyan);">0%</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;">Avg Attempts/Problem</div>
+                        <div id="summary-attempts" style="font-size:1.35rem;font-weight:800;color:#fff;">0.0</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;">Mistakes Diagnosed</div>
+                        <div id="summary-mistakes" style="font-size:1.35rem;font-weight:800;color:var(--accent-rose);">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4-Box Summary Highlights -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.25rem;">
+                <!-- Strong Areas -->
+                <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:1rem;">
+                    <div style="font-size:0.78rem;font-weight:700;color:var(--accent-emerald);text-transform:uppercase;margin-bottom:0.4rem;">
+                        ✅ Strong Areas
+                    </div>
+                    <div id="strong-areas-list" style="font-size:0.95rem;color:#fff;font-weight:600;">
+                        Arrays, Strings
+                    </div>
+                </div>
+
+                <!-- Needs Improvement -->
+                <div style="background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.25);border-radius:8px;padding:1rem;">
+                    <div style="font-size:0.78rem;font-weight:700;color:var(--accent-rose);text-transform:uppercase;margin-bottom:0.4rem;">
+                        ⚠️ Needs Improvement
+                    </div>
+                    <div id="weak-areas-list" style="font-size:0.95rem;color:#fff;font-weight:600;">
+                        Recursion, Sliding Window
+                    </div>
+                </div>
+
+                <!-- Most Common Mistake -->
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:1rem;">
+                    <div style="font-size:0.78rem;font-weight:700;color:var(--accent-amber);text-transform:uppercase;margin-bottom:0.4rem;">
+                        🔄 Most Common Mistake
+                    </div>
+                    <div id="most-common-mistake" style="font-size:0.95rem;color:#fff;font-weight:600;">
+                        Incorrect boundary condition
+                    </div>
+                </div>
+
+                <!-- Recommended Next Topic -->
+                <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:8px;padding:1rem;">
+                    <div style="font-size:0.78rem;font-weight:700;color:var(--accent-purple);text-transform:uppercase;margin-bottom:0.4rem;">
+                        🎯 Recommended Next Topic
+                    </div>
+                    <div id="rec-next-topic" style="font-size:0.95rem;color:#fff;font-weight:600;">
+                        Sliding Window
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2-Column Deep Dive Section -->
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+            <!-- Left: Recurring Conceptual Mistakes ("Why you are struggling") -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🔁 Recurring Mistake Breakdown</span>
+                    <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">Root Cause Explanations</span>
+                </div>
+                <div id="recurring-mistakes-container" style="display:flex;flex-direction:column;gap:1rem;">
+                    <div style="color:var(--text-muted);font-size:0.88rem;">Analyzing recurring patterns...</div>
+                </div>
+            </div>
+
+            <!-- Right: Mistake Category Distribution Chart -->
+            <div class="card" style="display:flex;flex-direction:column;">
+                <div class="card-title">
+                    <span>Mistake Category Distribution</span>
+                </div>
+                <div style="flex:1;min-height:260px;position:relative;">
+                    <canvas id="mistakeDonutChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalized Practice Roadmap -->
+        <div class="card">
+            <div class="card-title">
+                <span>🎯 Targeted Questions To Overcome Weaknesses</span>
+                <a href="/recommendations" class="btn btn-secondary btn-sm">View Full Path →</a>
+            </div>
+            <div id="analysis-recs-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;">
+                <div style="color:var(--text-muted);font-size:0.88rem;">Loading tailored questions...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/kiwi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('analysis');
+
+            try {
+                const report = await App.request(`/analysis/student/${user.id}`);
+                renderAnalysisReport(report);
+            } catch (err) {
+                App.showToast('Failed to load analysis report: ' + err.message, 'error');
+            }
+        });
+
+        function renderAnalysisReport(report) {
+            document.getElementById('summary-acc').innerText = `${report.overallAccuracy}%`;
+            document.getElementById('summary-attempts').innerText = report.averageAttempts;
+            document.getElementById('summary-mistakes').innerText = report.totalMistakesLogged;
+
+            // Highlight Cards
+            document.getElementById('strong-areas-list').innerText = report.strongAreas && report.strongAreas.length > 0 ? report.strongAreas.join(', ') : 'None yet (Practice more)';
+            document.getElementById('weak-areas-list').innerText = report.weakAreas && report.weakAreas.length > 0 ? report.weakAreas.join(', ') : 'None detected yet';
+            document.getElementById('most-common-mistake').innerText = (report.totalMistakesLogged > 0 && report.mostCommonMistake) ? report.mostCommonMistake : 'None yet';
+            document.getElementById('rec-next-topic').innerText = report.recommendedNextTopic || 'Arrays';
+
+            // Recurring Mistakes Deep Dive
+            renderRecurringMistakes(report.recurringMistakes, report.recentMistakes, report);
+
+            // Chart
+            DsaCharts.renderMistakeDistribution('mistakeDonutChart', report.mistakeCategoryDistribution);
+
+            // Recommendations
+            renderTargetedRoadmap(report.targetedPracticeQuestions);
+        }
+
+        function renderRecurringMistakes(recurring, recent, report) {
+            const container = document.getElementById('recurring-mistakes-container');
+            
+            let items = recurring && recurring.length > 0 ? recurring : (recent || []);
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted);">
+                        <div style="font-size:2.2rem;margin-bottom:0.5rem;">🎉</div>
+                        <div style="font-weight:600;color:var(--text-primary);margin-bottom:0.25rem;">No Mistakes Logged Yet</div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">When you submit solutions with errors or test case failures, AI mistake analysis will appear here.</div>
+                        <a href="/problems" class="btn btn-secondary btn-sm">Solve a Problem →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            items.slice(0, 4).forEach(m => {
+                html += `
+                    <div style="background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:8px;padding:1.25rem;border-left:4px solid var(--accent-purple);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div style="font-weight:700;color:var(--text-white);font-size:0.95rem;">
+                                Topic: <span style="color:var(--accent-cyan);">${m.topicName || 'DSA'}</span>
+                            </div>
+                            <span class="badge badge-wrong">
+                                Frequency: ${m.occurrenceCount || 1} times
+                            </span>
+                        </div>
+
+                        <div style="font-size:0.9rem;font-weight:600;color:var(--accent-amber);margin-bottom:0.35rem;">
+                            Repeated Mistake: ${m.specificMistake}
+                        </div>
+
+                        <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;line-height:1.5;">
+                            <b>Explanation (Why you are struggling):</b> ${m.explanation}
+                        </div>
+
+                        ${m.suggestedFix ? `
+                            <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);padding:0.5rem 0.75rem;border-radius:4px;font-size:0.82rem;color:#34d399;">
+                                💡 <b>How to overcome:</b> ${m.suggestedFix}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderTargetedRoadmap(recs) {
+            const container = document.getElementById('analysis-recs-grid');
+            if (!recs || recs.length === 0) {
+                // Fallback demo recs
+                container.innerHTML = `
+                    <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--border-subtle);">
+                        <span class="badge badge-easy">EASY</span>
+                        <div style="font-weight:600;color:#fff;margin:0.5rem 0;">Power of Two</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">Builds recursion base condition intuition</div>
+                        <a href="/editor?id=13" class="btn btn-primary btn-sm" style="width:100%;">Solve Now →</a>
+                    </div>
+                    <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--border-subtle);">
+                        <span class="badge badge-medium">MEDIUM</span>
+                        <div style="font-weight:600;color:#fff;margin:0.5rem 0;">Longest Substring Without Repeating</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">Master left pointer contraction</div>
+                        <a href="/editor?id=11" class="btn btn-primary btn-sm" style="width:100%;">Solve Now →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            recs.slice(0, 4).forEach(r => {
+                html += `
+                    <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--border-subtle);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span class="badge badge-${r.difficulty ? r.difficulty.toLowerCase() : 'medium'}">${r.difficulty || 'MEDIUM'}</span>
+                            <span class="badge badge-topic">${r.topicName || 'DSA'}</span>
+                        </div>
+                        <div style="font-weight:600;color:#fff;margin:0.5rem 0;font-size:0.95rem;">${r.problemTitle}</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;min-height:38px;">
+                            ${r.reason || 'Targeted practice'}
+                        </div>
+                        <a href="/editor?id=${r.problemId}" class="btn btn-primary btn-sm" style="width:100%;">Solve Now →</a>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

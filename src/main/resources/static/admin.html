@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">⚙️ Admin Control Panel</h1>
+                <p class="page-subtitle">Manage curriculum problems, test harness suites, monitor enrolled students, and inspect systemic failure patterns.</p>
+            </div>
+            <div>
+                <button onclick="openProblemModal()" class="btn btn-primary">➕ Add New DSA Problem</button>
+            </div>
+        </div>
+
+        <!-- Admin Metrics KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Total Enrolled Students</h4>
+                    <div class="kpi-value" id="adm-students">0</div>
+                </div>
+                <div class="kpi-icon blue">👨‍🎓</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Total DSA Problems</h4>
+                    <div class="kpi-value" id="adm-problems">0</div>
+                </div>
+                <div class="kpi-icon green">📚</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Total Code Submissions</h4>
+                    <div class="kpi-value" id="adm-submissions">0</div>
+                </div>
+                <div class="kpi-icon purple">⚡</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Most Difficult Area</h4>
+                    <div class="kpi-value" id="adm-diff-topic" style="font-size:1.15rem;color:var(--accent-rose);">Sliding Window</div>
+                </div>
+                <div class="kpi-icon amber">⚠️</div>
+            </div>
+        </div>
+
+        <!-- 2-Column Section: Problem CRUD & Student Performance -->
+        <div class="admin-grid">
+            <!-- Problems Management Table -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Problem Library Management</span>
+                    <button onclick="openProblemModal()" class="btn btn-primary btn-sm">➕ Add Problem</button>
+                </div>
+                <div class="table-container" style="max-height:400px;overflow-y:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Topic</th>
+                                <th>Difficulty</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-problems-tbody">
+                            <tr><td colspan="5" style="text-align:center;padding:2rem;">Loading problems...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Global Common Mistake Analytics -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🔥 Most Common Systemic Mistakes</span>
+                </div>
+                <div id="admin-mistakes-list" style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="color:var(--text-muted);font-size:0.88rem;">Loading mistake statistics...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrolled Students Performance & Evaluation Table -->
+        <div class="card">
+            <div class="card-title" style="flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <span>👨‍🎓 Enrolled Students & Performance Evaluation</span>
+                    <p style="font-size:0.82rem;color:var(--text-secondary);font-weight:normal;margin-top:0.2rem;">
+                        Track student practice progress, overall accuracy, weak topics, and performance status (Best / Good / Needs Attention).
+                    </p>
+                </div>
+                <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                    <input type="text" id="admin-student-search" class="form-control" placeholder="🔍 Search student by name, email..." style="width:220px;padding:0.4rem 0.75rem;font-size:0.85rem;" oninput="filterAdminStudents()">
+                    <select id="admin-student-filter" class="form-control" style="width:170px;padding:0.4rem 0.75rem;font-size:0.85rem;" onchange="filterAdminStudents()">
+                        <option value="ALL">All Statuses</option>
+                        <option value="BEST">🌟 Best Performers</option>
+                        <option value="GOOD">👍 Good Performers</option>
+                        <option value="AVERAGE">📈 Average</option>
+                        <option value="NEEDS_IMPROVEMENT">⚠️ Needs Attention</option>
+                        <option value="NOT_STARTED">🆕 Not Started</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>College & Branch</th>
+                            <th>Solved / Attempted</th>
+                            <th>Accuracy</th>
+                            <th>Primary Weakness</th>
+                            <th>Performance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-students-tbody">
+                        <tr><td colspan="6" style="text-align:center;padding:2rem;">Loading student records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Problem Add/Edit Modal -->
+    <div id="problem-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content" style="max-width:750px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--border-card);padding-bottom:0.75rem;">
+                <h3 id="problem-modal-title" style="color:#fff;font-size:1.15rem;">Add New Problem</h3>
+                <button onclick="closeProblemModal()" class="btn btn-secondary btn-sm" style="border-radius:50%;width:30px;height:30px;padding:0;">✕</button>
+            </div>
+
+            <form id="problem-form">
+                <input type="hidden" id="p-id">
+                
+                <!-- Repeated Question / Duplicate Code Detection Banner -->
+                <div id="dup-alert-banner" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);border-radius:8px;padding:0.85rem 1rem;margin-bottom:1rem;">
+                    <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+                        <span style="font-size:1.3rem;line-height:1;">⚠️</span>
+                        <div style="flex:1;">
+                            <div style="font-weight:700;color:#ef4444;font-size:0.92rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                                <span>The code is already exists!</span>
+                                <span class="badge badge-wrong" style="font-size:0.7rem;padding:0.15rem 0.45rem;">Repeated Question Prevented</span>
+                            </div>
+                            <div id="dup-alert-desc" style="margin-top:0.3rem;color:#fecaca;font-size:0.82rem;line-height:1.4;">
+                                A question with this title or code already exists in the system.
+                            </div>
+                            <div style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center;">
+                                <a id="dup-view-btn" href="#" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0.25rem 0.6rem;text-decoration:none;">
+                                    🔍 View Existing Question In Editor
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Problem Title</label>
+                    <input type="text" id="p-title" class="form-control" placeholder="e.g. Longest Palindromic Substring" required oninput="onQuestionInputChanged()">
+                    <div id="p-title-dup-hint" style="display:none;color:#ef4444;font-size:0.78rem;margin-top:0.35rem;font-weight:600;"></div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Primary DSA Topic</label>
+                        <select id="p-topic" class="form-control" required>
+                            <option value="ARRAYS">Arrays</option>
+                            <option value="STRINGS">Strings</option>
+                            <option value="HASHMAP">HashMap</option>
+                            <option value="STACK">Stack</option>
+                            <option value="QUEUE">Queue</option>
+                            <option value="LINKED_LIST">Linked List</option>
+                            <option value="RECURSION">Recursion</option>
+                            <option value="BINARY_SEARCH">Binary Search</option>
+                            <option value="SLIDING_WINDOW">Sliding Window</option>
+                            <option value="TWO_POINTER">Two Pointer</option>
+                            <option value="SORTING">Sorting</option>
+                            <option value="TREES">Trees</option>
+                            <option value="GRAPHS">Graphs</option>
+                            <option value="DYNAMIC_PROGRAMMING">Dynamic Programming</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Difficulty</label>
+                        <select id="p-diff" class="form-control" required>
+                            <option value="EASY">Easy</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HARD">Hard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Alternative / Secondary DSA Topics (Choose Multiple)</label>
+                    <div id="alt-topics-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:0.4rem;background:var(--bg-secondary);padding:0.75rem;border-radius:6px;border:1px solid var(--border-subtle);max-height:120px;overflow-y:auto;">
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="ARRAYS"> Arrays</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="STRINGS"> Strings</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="HASHMAP"> HashMap</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="STACK"> Stack</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="QUEUE"> Queue</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="LINKED_LIST"> Linked List</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="RECURSION"> Recursion</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="BINARY_SEARCH"> Binary Search</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="SLIDING_WINDOW"> Sliding Window</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="TWO_POINTER"> Two Pointer</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="SORTING"> Sorting</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="TREES"> Trees</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="GRAPHS"> Graphs</label>
+                        <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:#cbd5e1;cursor:pointer;"><input type="checkbox" name="alt-topic" value="DYNAMIC_PROGRAMMING"> Dynamic Programming</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Supported Algorithmic Approaches & Complexities</label>
+                    <input type="text" id="p-approaches" class="form-control" placeholder="e.g. HashMap (O(N) Time, O(N) Space) | Two Pointers (O(N log N)) | Brute Force (O(N^2))">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Problem Description</label>
+                    <textarea id="p-desc" class="form-control" style="min-height:90px;" placeholder="Full statement description..." required></textarea>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Example Input</label>
+                        <textarea id="p-ex-in" class="form-control" style="min-height:60px;" placeholder="[2, 7, 11, 15]&#10;9"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Example Output</label>
+                        <textarea id="p-ex-out" class="form-control" style="min-height:60px;" placeholder="[0, 1]"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Constraints</label>
+                    <textarea id="p-constraints" class="form-control" style="min-height:60px;" placeholder="1 <= nums.length <= 10^4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Java Starter Code</label>
+                    <textarea id="p-starter" class="form-control" style="min-height:100px;font-family:var(--font-mono);font-size:0.85rem;" placeholder="class Solution {&#10;    public int solve(int[] nums) {&#10;        &#10;    }&#10;}" oninput="onQuestionInputChanged()"></textarea>
+                    <div id="p-code-dup-hint" style="display:none;color:#ef4444;font-size:0.78rem;margin-top:0.35rem;font-weight:600;"></div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1rem;">
+                    <button type="button" onclick="closeProblemModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="btn-save-problem" class="btn btn-primary">Save Problem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Test Case Modal -->
+    <div id="testcase-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content" style="max-width:550px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--border-card);padding-bottom:0.75rem;">
+                <h3 id="tc-modal-title" style="color:#fff;font-size:1.15rem;">Add Test Case</h3>
+                <button onclick="closeTestCaseModal()" class="btn btn-secondary btn-sm" style="border-radius:50%;width:30px;height:30px;padding:0;">✕</button>
+            </div>
+
+            <form id="tc-form">
+                <input type="hidden" id="tc-problem-id">
+                
+                <div class="form-group">
+                    <label class="form-label">Test Input</label>
+                    <textarea id="tc-input" class="form-control" style="min-height:80px;font-family:var(--font-mono);" placeholder="[1, 2, 3]&#10;4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Expected Output</label>
+                    <input type="text" id="tc-output" class="form-control" style="font-family:var(--font-mono);" placeholder="true" required>
+                </div>
+
+                <div style="display:flex;gap:1.5rem;margin-bottom:1rem;">
+                    <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--text-secondary);">
+                        <input type="checkbox" id="tc-sample" checked> Sample Test Case
+                    </label>
+                    <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--text-secondary);">
+                        <input type="checkbox" id="tc-hidden"> Hidden Test Case
+                    </label>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.75rem;">
+                    <button type="button" onclick="closeTestCaseModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Test Case</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        let adminProblems = [];
+        let allAdminStudents = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('ADMIN');
+            if (!user) return;
+
+            App.renderNav();
+            await loadAdminDashboard();
+        });
+
+        async function loadAdminDashboard() {
+            try {
+                const dash = await App.request('/admin/dashboard');
+                adminProblems = await App.request('/problems');
+                allAdminStudents = dash.studentPerformances || dash.students || [];
+
+                document.getElementById('adm-students').innerText = dash.totalStudents;
+                document.getElementById('adm-problems').innerText = dash.totalProblems;
+                document.getElementById('adm-submissions').innerText = dash.totalSubmissions;
+                document.getElementById('adm-diff-topic').innerText = dash.mostDifficultTopic;
+
+                renderAdminProblems(adminProblems);
+                renderMistakeStats(dash.commonMistakes);
+                renderStudents(allAdminStudents);
+            } catch (err) {
+                App.showToast('Failed to load admin dashboard: ' + err.message, 'error');
+            }
+        }
+
+        function renderAdminProblems(problems) {
+            const tbody = document.getElementById('admin-problems-tbody');
+            if (!problems || problems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">No problems available.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            problems.forEach((p, idx) => {
+                const altBadges = (p.alternativeTopics && p.alternativeTopics.trim().length > 0)
+                    ? p.alternativeTopics.split(',').map(at => {
+                        const trimmed = at.trim();
+                        return trimmed ? `<span class="badge" style="background:rgba(255,255,255,0.08);color:#94a3b8;font-size:0.68rem;padding:0.15rem 0.4rem;">${trimmed.replace('_', ' ')}</span>` : '';
+                    }).join(' ')
+                    : '';
+
+                html += `
+                    <tr>
+                        <td style="color:var(--accent-cyan);font-weight:700;">#${p.id}</td>
+                        <td style="font-weight:600;color:#fff;">
+                            <div><span style="color:var(--text-muted);font-weight:500;margin-right:0.35rem;">#${p.id}</span>${p.title}</div>
+                            ${p.supportedApproaches ? `<div style="font-size:0.72rem;color:var(--accent-cyan);font-weight:normal;margin-top:0.15rem;">💡 ${p.supportedApproaches}</div>` : ''}
+                        </td>
+                        <td>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.3rem;align-items:center;">
+                                <span class="badge badge-topic">${p.topic ? p.topic.replace('_', ' ') : 'General'}</span>
+                                ${altBadges}
+                            </div>
+                        </td>
+                        <td><span class="badge badge-${p.difficulty.toLowerCase()}">${p.difficulty}</span></td>
+                        <td style="text-align:right;">
+                            <button onclick="openTestCaseModal(${p.id}, '${escapeQuote(p.title)}')" class="btn btn-secondary btn-sm" title="Add Test Case">🧪 Test Case</button>
+                            <button onclick="editProblem(${p.id})" class="btn btn-secondary btn-sm" title="Edit Problem">✏️</button>
+                            <button onclick="deleteProblem(${p.id})" class="btn btn-secondary btn-sm" style="color:var(--status-wrong);" title="Delete Problem">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderMistakeStats(mistakes) {
+            const container = document.getElementById('admin-mistakes-list');
+            if (!mistakes || mistakes.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted);">No mistakes logged yet.</div>';
+                return;
+            }
+
+            let html = '';
+            mistakes.forEach(m => {
+                html += `
+                    <div style="background:var(--bg-secondary);padding:0.75rem 1rem;border-radius:6px;border:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-weight:600;font-size:0.9rem;color:#fff;">${m.specificMistake}</div>
+                            <div style="font-size:0.78rem;color:var(--text-muted);">${m.topic || 'General'}</div>
+                        </div>
+                        <span class="badge badge-wrong">${m.count} occurrences</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function filterAdminStudents() {
+            const query = (document.getElementById('admin-student-search')?.value || '').toLowerCase().trim();
+            const filterStatus = document.getElementById('admin-student-filter')?.value || 'ALL';
+
+            const filtered = allAdminStudents.filter(s => {
+                const matchQuery = !query || 
+                    (s.name && s.name.toLowerCase().includes(query)) || 
+                    (s.email && s.email.toLowerCase().includes(query)) ||
+                    (s.college && s.college.toLowerCase().includes(query));
+                
+                const matchStatus = (filterStatus === 'ALL') || (s.performanceStatus === filterStatus);
+                return matchQuery && matchStatus;
+            });
+
+            renderStudents(filtered);
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('admin-students-tbody');
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2.5rem;color:var(--text-muted);">No student records found matching your filters.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            students.forEach(s => {
+                const accuracy = s.overallAccuracy !== undefined ? s.overallAccuracy : 0.0;
+                const solved = s.totalSolved || 0;
+                const attempted = s.totalAttempted || 0;
+                const subs = s.totalSubmissions || 0;
+                const status = s.performanceStatus || (subs === 0 ? 'NOT_STARTED' : accuracy >= 70 ? 'BEST' : accuracy >= 50 ? 'GOOD' : 'NEEDS_IMPROVEMENT');
+                
+                let badgeClass = 'badge-secondary';
+                let statusIcon = '🆕';
+                let statusText = 'Not Started';
+
+                if (status === 'BEST') {
+                    badgeClass = 'badge-accepted';
+                    statusIcon = '🌟';
+                    statusText = 'Best Performer';
+                } else if (status === 'GOOD') {
+                    badgeClass = 'badge-topic';
+                    statusIcon = '👍';
+                    statusText = 'Good';
+                } else if (status === 'AVERAGE') {
+                    badgeClass = 'badge-compile';
+                    statusIcon = '📈';
+                    statusText = 'Average';
+                } else if (status === 'NEEDS_IMPROVEMENT') {
+                    badgeClass = 'badge-wrong';
+                    statusIcon = '⚠️';
+                    statusText = 'Needs Attention';
+                }
+
+                const weakness = s.primaryWeaknessTopic || (subs > 0 ? 'Sliding Window' : 'None yet');
+
+                html += `
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent-primary),var(--accent-cyan));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.85rem;">
+                                    ${(s.name || 'S').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;color:#fff;font-size:0.95rem;">${s.name}</div>
+                                    <div style="font-size:0.75rem;color:var(--text-muted);">${s.email}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight:500;color:#e2e8f0;font-size:0.88rem;">${s.college || 'N/A'}</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);">${s.branch || 'CSE'} ${s.graduationYear ? '• Class of ' + s.graduationYear : ''}</div>
+                        </td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.4rem;">
+                                <span style="font-weight:700;color:#fff;">${solved}</span>
+                                <span style="color:var(--text-muted);font-size:0.8rem;">/ ${attempted} attempted</span>
+                            </div>
+                            <div style="font-size:0.72rem;color:var(--text-secondary);">${subs} total runs</div>
+                        </td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <div style="flex:1;min-width:60px;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                                    <div style="width:${Math.min(100, accuracy)}%;height:100%;background:${accuracy >= 70 ? 'var(--status-accepted)' : accuracy >= 40 ? 'var(--status-compile)' : 'var(--status-wrong)'};"></div>
+                                </div>
+                                <span style="font-weight:700;font-size:0.88rem;color:${accuracy >= 70 ? 'var(--status-accepted)' : accuracy >= 40 ? 'var(--status-compile)' : 'var(--status-wrong)'};">${accuracy}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background:rgba(244,63,94,0.12);color:var(--accent-rose);border:1px solid rgba(244,63,94,0.25);font-size:0.75rem;">
+                                ${weakness}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}" style="font-size:0.78rem;padding:0.25rem 0.65rem;">
+                                ${statusIcon} ${statusText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        let duplicateDebounceTimer = null;
+        let currentDuplicate = null;
+
+        function normalizeCodeStr(str) {
+            if (!str) return '';
+            return str.replace(/\/\/.*$/gm, '')
+                      .replace(/\/\*[\s\S]*?\*\//g, '')
+                      .replace(/\s+/g, '');
+        }
+
+        function isGenericTemplate(norm) {
+            return norm === 'classSolution{publicintsolve(int[]nums){}}' ||
+                   norm === 'classSolution{publicvoidsolve(){}}' ||
+                   norm === 'classSolution{publicintsolve(){}}' ||
+                   norm === 'classSolution{publicintsolve(int[]nums){//studentcode}}';
+        }
+
+        function checkDuplicateQuestion() {
+            const rawId = document.getElementById('p-id').value;
+            const editId = rawId ? parseInt(rawId) : null;
+            const titleVal = (document.getElementById('p-title').value || '').trim();
+            const starterVal = (document.getElementById('p-starter').value || '').trim();
+
+            const banner = document.getElementById('dup-alert-banner');
+            const bannerDesc = document.getElementById('dup-alert-desc');
+            const viewBtn = document.getElementById('dup-view-btn');
+            const titleInput = document.getElementById('p-title');
+            const titleHint = document.getElementById('p-title-dup-hint');
+            const codeTextarea = document.getElementById('p-starter');
+            const codeHint = document.getElementById('p-code-dup-hint');
+            const saveBtn = document.getElementById('btn-save-problem');
+
+            // Reset UI
+            if (banner) banner.style.display = 'none';
+            if (titleInput) titleInput.style.borderColor = '';
+            if (titleHint) { titleHint.style.display = 'none'; titleHint.innerText = ''; }
+            if (codeTextarea) codeTextarea.style.borderColor = '';
+            if (codeHint) { codeHint.style.display = 'none'; codeHint.innerText = ''; }
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '';
+                saveBtn.style.cursor = '';
+                saveBtn.innerText = editId ? 'Update Problem' : 'Save Problem';
+            }
+            currentDuplicate = null;
+
+            if (!titleVal && !starterVal) return;
+
+            const normTitle = titleVal.toLowerCase().replace(/\s+/g, ' ');
+            const normCode = normalizeCodeStr(starterVal);
+
+            let match = null;
+            let matchType = null;
+
+            // 1. Check title match
+            if (titleVal.length > 0 && adminProblems && adminProblems.length > 0) {
+                for (const p of adminProblems) {
+                    if (editId && p.id === editId) continue;
+                    if (p.title && p.title.trim().toLowerCase().replace(/\s+/g, ' ') === normTitle) {
+                        match = p;
+                        matchType = 'title';
+                        break;
+                    }
+                }
+            }
+
+            // 2. Check starter code match if non-generic
+            if (!match && normCode.length > 25 && !isGenericTemplate(normCode) && adminProblems) {
+                for (const p of adminProblems) {
+                    if (editId && p.id === editId) continue;
+                    if (p.starterCode) {
+                        const existingNorm = normalizeCodeStr(p.starterCode);
+                        if (existingNorm.length > 25 && !isGenericTemplate(existingNorm) && existingNorm === normCode) {
+                            match = p;
+                            matchType = 'code';
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (match) {
+                currentDuplicate = { match, matchType };
+                if (banner) {
+                    banner.style.display = 'block';
+                    if (matchType === 'title') {
+                        bannerDesc.innerHTML = `The code is already exists! A question with title <strong>"${match.title}"</strong> is already in the curriculum (<strong>#${match.id}</strong> in <em>${match.topic}</em>, ${match.difficulty}). Repeated question is prevented.`;
+                    } else {
+                        bannerDesc.innerHTML = `The code is already exists! This exact Java starter code matches existing Problem <strong>#${match.id}: "${match.title}"</strong> (<em>${match.topic}</em>). Repeated question is prevented.`;
+                    }
+                }
+
+                if (matchType === 'title' && titleInput && titleHint) {
+                    titleInput.style.borderColor = '#ef4444';
+                    titleHint.style.display = 'block';
+                    titleHint.innerHTML = `⚠️ The code is already exists: Problem #${match.id} ("${match.title}")`;
+                } else if (matchType === 'code' && codeTextarea && codeHint) {
+                    codeTextarea.style.borderColor = '#ef4444';
+                    codeHint.style.display = 'block';
+                    codeHint.innerHTML = `⚠️ The code is already exists in Problem #${match.id} ("${match.title}")`;
+                }
+
+                if (viewBtn) {
+                    viewBtn.href = `/editor?id=${match.id}`;
+                    viewBtn.style.display = 'inline-flex';
+                }
+
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.style.opacity = '0.6';
+                    saveBtn.style.cursor = 'not-allowed';
+                    saveBtn.innerText = '🚫 The code is already exists';
+                }
+            }
+        }
+
+        function onQuestionInputChanged() {
+            clearTimeout(duplicateDebounceTimer);
+            duplicateDebounceTimer = setTimeout(checkDuplicateQuestion, 120);
+        }
+
+        function openProblemModal(problem = null) {
+            clearTimeout(duplicateDebounceTimer);
+            currentDuplicate = null;
+            const banner = document.getElementById('dup-alert-banner');
+            if (banner) banner.style.display = 'none';
+            const titleHint = document.getElementById('p-title-dup-hint');
+            if (titleHint) titleHint.style.display = 'none';
+            const codeHint = document.getElementById('p-code-dup-hint');
+            if (codeHint) codeHint.style.display = 'none';
+            const pTitle = document.getElementById('p-title');
+            if (pTitle) pTitle.style.borderColor = '';
+            const pStarter = document.getElementById('p-starter');
+            if (pStarter) pStarter.style.borderColor = '';
+            const saveBtn = document.getElementById('btn-save-problem');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '';
+                saveBtn.style.cursor = '';
+                saveBtn.innerText = problem ? 'Update Problem' : 'Save Problem';
+            }
+
+            const modal = document.getElementById('problem-modal');
+            const title = document.getElementById('problem-modal-title');
+            document.getElementById('problem-form').reset();
+            document.querySelectorAll('input[name="alt-topic"]').forEach(cb => cb.checked = false);
+
+            if (problem) {
+                title.innerText = 'Edit Problem #' + problem.id;
+                document.getElementById('p-id').value = problem.id;
+                document.getElementById('p-title').value = problem.title;
+                document.getElementById('p-topic').value = problem.topic;
+                document.getElementById('p-diff').value = problem.difficulty;
+                document.getElementById('p-approaches').value = problem.supportedApproaches || '';
+                document.getElementById('p-desc').value = problem.description;
+                document.getElementById('p-ex-in').value = problem.exampleInput || '';
+                document.getElementById('p-ex-out').value = problem.exampleOutput || '';
+                document.getElementById('p-constraints').value = problem.constraints || '';
+                document.getElementById('p-starter').value = problem.starterCode || '';
+
+                if (problem.alternativeTopics) {
+                    const sel = problem.alternativeTopics.split(',').map(s => s.trim());
+                    document.querySelectorAll('input[name="alt-topic"]').forEach(cb => {
+                        cb.checked = sel.includes(cb.value);
+                    });
+                }
+            } else {
+                title.innerText = 'Add New Problem';
+                document.getElementById('p-id').value = '';
+                document.getElementById('p-approaches').value = '';
+                document.getElementById('p-starter').value = 'class Solution {\n    public int solve(int[] nums) {\n        // student code\n    }\n}';
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeProblemModal() {
+            clearTimeout(duplicateDebounceTimer);
+            document.getElementById('problem-modal').style.display = 'none';
+        }
+
+        function editProblem(id) {
+            const p = adminProblems.find(item => item.id === id);
+            if (p) openProblemModal(p);
+        }
+
+        async function deleteProblem(id) {
+            if (confirm(`Are you sure you want to delete problem #${id}?`)) {
+                try {
+                    await App.request(`/admin/problems/${id}`, { method: 'DELETE' });
+                    App.showToast('Problem deleted successfully', 'success');
+                    await loadAdminDashboard();
+                } catch (err) {
+                    App.showToast('Failed to delete problem: ' + err.message, 'error');
+                }
+            }
+        }
+
+        document.getElementById('problem-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Guard against duplicate / repeated questions
+            checkDuplicateQuestion();
+            if (currentDuplicate) {
+                App.showToast(`Cannot save: The code is already exists in Problem #${currentDuplicate.match.id} ('${currentDuplicate.match.title}')! Repeated question prevented.`, 'error');
+                return;
+            }
+
+            const id = document.getElementById('p-id').value;
+            const title = document.getElementById('p-title').value.trim();
+            const topic = document.getElementById('p-topic').value;
+            const difficulty = document.getElementById('p-diff').value;
+            const supportedApproaches = document.getElementById('p-approaches').value.trim();
+            const description = document.getElementById('p-desc').value.trim();
+            const exampleInput = document.getElementById('p-ex-in').value.trim();
+            const exampleOutput = document.getElementById('p-ex-out').value.trim();
+            const constraints = document.getElementById('p-constraints').value.trim();
+            const starterCode = document.getElementById('p-starter').value.trim();
+
+            const checkedAlts = Array.from(document.querySelectorAll('input[name="alt-topic"]:checked'))
+                .map(cb => cb.value)
+                .filter(v => v !== topic);
+            const alternativeTopics = checkedAlts.join(', ');
+
+            const body = {
+                title, topic, difficulty, alternativeTopics, supportedApproaches, description,
+                exampleInput, exampleOutput, constraints, starterCode,
+                methodName: "solve", returnType: "int", parameterTypes: "int[]"
+            };
+
+            try {
+                if (id) {
+                    await App.request(`/admin/problems/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+                    App.showToast('Problem updated successfully', 'success');
+                } else {
+                    await App.request('/admin/problems', { method: 'POST', body: JSON.stringify(body) });
+                    App.showToast('Problem added successfully', 'success');
+                }
+                closeProblemModal();
+                await loadAdminDashboard();
+            } catch (err) {
+                App.showToast(err.message, 'error');
+            }
+        });
+
+        // Test case modal
+        function openTestCaseModal(problemId, problemTitle) {
+            document.getElementById('tc-problem-id').value = problemId;
+            document.getElementById('tc-modal-title').innerText = `Add Test Case for: ${problemTitle}`;
+            document.getElementById('tc-form').reset();
+            document.getElementById('tc-modal').style.display = 'flex';
+        }
+
+        function closeTestCaseModal() {
+            document.getElementById('tc-modal').style.display = 'none';
+        }
+
+        document.getElementById('tc-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const problemId = document.getElementById('tc-problem-id').value;
+            const input = document.getElementById('tc-input').value.trim();
+            const expectedOutput = document.getElementById('tc-output').value.trim();
+            const isSample = document.getElementById('tc-sample').checked;
+            const isHidden = document.getElementById('tc-hidden').checked;
+
+            try {
+                await App.request(`/admin/problems/${problemId}/testcases`, {
+                    method: 'POST',
+                    body: JSON.stringify({ input, expectedOutput, isSample, isHidden, explanation: "Admin test case" })
+                });
+                App.showToast('Test case saved successfully!', 'success');
+                closeTestCaseModal();
+            } catch (err) {
+                App.showToast(err.message, 'error');
+            }
+        });
+
+        function escapeQuote(s) {
+            return (s || '').replace(/'/g, "\\'");
+        }
+    </script>
+</body>
+</html>

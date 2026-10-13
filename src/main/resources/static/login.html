@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <!-- Tabs -->
+            <div style="display:flex;border-bottom:1px solid var(--border-card);margin-bottom:1.5rem;">
+                <button id="tab-student" class="btn" style="flex:1;border-radius:0;border-bottom:2px solid var(--accent-primary);color:#fff;background:transparent;" onclick="switchAuthTab('student')">
+                    👨‍🎓 Student Login
+                </button>
+                <button id="tab-admin" class="btn" style="flex:1;border-radius:0;border-bottom:2px solid transparent;color:var(--text-muted);background:transparent;" onclick="switchAuthTab('admin')">
+                    ⚙️ Admin Login
+                </button>
+            </div>
+
+            <h2 id="auth-heading" style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">
+                Student Login
+            </h2>
+            <p id="auth-sub" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Enter your credentials to continue your DSA practice
+            </p>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" id="lbl-identifier">Email Address</label>
+                    <input type="text" id="login-identifier" class="form-control" placeholder="alex@college.edu" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                    Sign In →
+                </button>
+            </form>
+
+            <div id="student-footer" style="margin-top: 1.5rem; text-align: center; font-size: 0.88rem; color: var(--text-secondary);">
+                Don't have an account? <a href="/register" style="font-weight: 600;">Register here</a>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                <b>Demo Credentials:</b><br>
+                Student: <code>alex@college.edu</code> / <code>student123</code><br>
+                Admin: <code>admin@dsalearning.com</code> / <code>admin123</code>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        let currentRole = 'student';
+
+        function switchAuthTab(role) {
+            currentRole = role;
+            const tabStudent = document.getElementById('tab-student');
+            const tabAdmin = document.getElementById('tab-admin');
+            const heading = document.getElementById('auth-heading');
+            const sub = document.getElementById('auth-sub');
+            const lbl = document.getElementById('lbl-identifier');
+            const input = document.getElementById('login-identifier');
+            const footer = document.getElementById('student-footer');
+
+            if (role === 'admin') {
+                tabAdmin.style.borderBottomColor = 'var(--accent-primary)';
+                tabAdmin.style.color = '#fff';
+                tabStudent.style.borderBottomColor = 'transparent';
+                tabStudent.style.color = 'var(--text-muted)';
+                heading.innerText = 'Admin Portal Login';
+                sub.innerText = 'Sign in with administrative privileges';
+                lbl.innerText = 'Admin Username or Email';
+                input.placeholder = 'admin@dsalearning.com';
+                footer.style.display = 'none';
+            } else {
+                tabStudent.style.borderBottomColor = 'var(--accent-primary)';
+                tabStudent.style.color = '#fff';
+                tabAdmin.style.borderBottomColor = 'transparent';
+                tabAdmin.style.color = 'var(--text-muted)';
+                heading.innerText = 'Student Login';
+                sub.innerText = 'Enter your credentials to continue your DSA practice';
+                lbl.innerText = 'Email Address';
+                input.placeholder = 'alex@college.edu';
+                footer.style.display = 'block';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById('login-identifier').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-login-submit');
+
+            btn.disabled = true;
+            btn.innerText = 'Signing in...';
+
+            try {
+                const endpoint = (currentRole === 'admin') ? '/auth/admin/login' : '/auth/login';
+                const body = (currentRole === 'admin') 
+                    ? { username: identifier, email: identifier, password: password }
+                    : { email: identifier, password: password };
+
+                const resp = await App.request(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+
+                if (resp.success) {
+                    App.setUser(resp);
+                    App.showToast('Login successful! Welcome, ' + resp.name, 'success');
+                    setTimeout(() => {
+                        window.location.href = resp.role === 'ADMIN' ? '/admin' : '/dashboard';
+                    }, 500);
+                } else {
+                    App.showToast(resp.message || 'Login failed', 'error');
+                }
+            } catch (err) {
+                App.showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Sign In →';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            App.renderNav();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === 'true') {
+                switchAuthTab('admin');
+            }
+        });
+    </script>
+</body>
+</html>

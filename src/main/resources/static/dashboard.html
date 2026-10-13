@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="app-header"></header>
+
+    <main class="main-container">
+        <!-- Header / Greeting -->
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">Welcome back, <span id="user-display-name" style="color:var(--accent-primary)">Student</span> 👋</h1>
+                <p class="page-subtitle">Here is an AI analysis of your coding mistakes, topic accuracy, and learning path.</p>
+            </div>
+            <div>
+                <a href="/problems" class="btn btn-primary">🚀 Practice Problems</a>
+            </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Problems Solved</h4>
+                    <div class="kpi-value" id="kpi-solved">0</div>
+                    <div class="kpi-subtext" id="kpi-attempted">0 attempted</div>
+                </div>
+                <div class="kpi-icon green">🎯</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Total Submissions</h4>
+                    <div class="kpi-value" id="kpi-submissions">0</div>
+                    <div class="kpi-subtext" style="color:var(--text-secondary)">Code runs & submits</div>
+                </div>
+                <div class="kpi-icon blue">⚡</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Overall Accuracy</h4>
+                    <div class="kpi-value" id="kpi-accuracy">0%</div>
+                    <div class="kpi-subtext" id="kpi-accuracy-note" style="color:var(--accent-cyan)">Passing rate</div>
+                </div>
+                <div class="kpi-icon purple">📊</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Improvement Rate</h4>
+                    <div class="kpi-value" id="kpi-improvement" style="color:var(--accent-emerald);">+0%</div>
+                    <div class="kpi-subtext" style="color:var(--accent-emerald)">After AI practice</div>
+                </div>
+                <div class="kpi-icon amber">📈</div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Split Grid -->
+        <div class="dashboard-grid">
+            <!-- Left Column: Topic Mastery Breakdown -->
+            <div class="card">
+                <div class="card-title">
+                    <span>DSA Topic Accuracy Breakdown</span>
+                    <a href="/problems" class="btn btn-secondary btn-sm">View All Problems →</a>
+                </div>
+                <div id="topic-list-container" class="topic-list">
+                    <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading topics...</div>
+                </div>
+            </div>
+
+            <!-- Right Column: AI Weakness & Skill Radar -->
+            <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                <!-- AI Weakness Spotlight -->
+                <div class="weakness-spotlight">
+                    <h3><span>⚠️</span> AI Weakness Detection</h3>
+                    <div id="weakness-spotlight-content">
+                        <div style="color:var(--text-muted);font-size:0.88rem;">Analyzing your submission history...</div>
+                    </div>
+                </div>
+
+                <!-- Skill Radar Chart -->
+                <div class="card" style="flex:1;min-height:300px;display:flex;flex-direction:column;">
+                    <div class="card-title" style="margin-bottom:0.5rem;">
+                        <span>Topic Mastery Radar</span>
+                    </div>
+                    <div style="flex:1;position:relative;height:240px;">
+                        <canvas id="topicRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Cognitive Thought-Process & Approach Insights Section -->
+        <div class="card" style="margin-top:1.5rem;border-left:4px solid var(--accent-indigo);">
+            <div class="card-title">
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="font-size:1.2rem;">🧠</span>
+                    <span>AI Thought-Process & Algorithmic Transition Diagnoses</span>
+                </div>
+                <a href="/analysis" class="btn btn-secondary btn-sm">Full Analysis & Insights →</a>
+            </div>
+            <div id="dashboard-thought-diagnoses-container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:1rem;">
+                <div style="color:var(--text-muted);font-size:0.88rem;">Analyzing algorithmic thought processes...</div>
+            </div>
+        </div>
+
+        <!-- Recent Submissions & Recommendations -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem;" id="lower-grid">
+            <!-- Recommended Practice Path -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🎯 Personalized Recommendations</span>
+                    <a href="/recommendations" class="btn btn-secondary btn-sm">Full Path →</a>
+                </div>
+                <div id="dashboard-recommendations-list" style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="color:var(--text-muted);font-size:0.88rem;">Loading tailored questions...</div>
+                </div>
+            </div>
+
+            <!-- Recent Submissions History -->
+            <div class="card">
+                <div class="card-title">
+                    <span>📜 Recent Submissions</span>
+                    <a href="/submissions" class="btn btn-secondary btn-sm">All Submissions →</a>
+                </div>
+                <div id="dashboard-recent-subs" style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="color:var(--text-muted);font-size:0.88rem;">No recent submissions yet.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/kiwi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('dashboard');
+            document.getElementById('user-display-name').innerText = user.name.split(' ')[0];
+
+            try {
+                const data = await App.request(`/students/${user.id}/dashboard`);
+                renderDashboardData(data);
+            } catch (err) {
+                App.showToast('Failed to load dashboard: ' + err.message, 'error');
+            }
+        });
+
+        function renderDashboardData(data) {
+            document.getElementById('kpi-solved').innerText = data.totalSolved;
+            document.getElementById('kpi-attempted').innerText = `${data.totalAttempted} problems attempted`;
+            document.getElementById('kpi-submissions').innerText = data.totalSubmissions;
+            document.getElementById('kpi-accuracy').innerText = `${data.overallAccuracy}%`;
+            document.getElementById('kpi-improvement').innerText = `+${data.improvementPercentage}%`;
+
+            // Topic List
+            renderTopicList(data.topicPerformances);
+
+            // Weakness Spotlight
+            renderWeaknessSpotlight(data.weakTopics, data.topicPerformances);
+
+            // Chart
+            if (data.topicPerformances && data.topicPerformances.length > 0) {
+                DsaCharts.renderTopicRadar('topicRadarChart', data.topicPerformances);
+            }
+
+            // Recommendations
+            renderRecommendations(data.recommendations);
+
+            // Cognitive Thought Process Diagnoses
+            renderThoughtDiagnoses(data.recentThoughtDiagnoses);
+
+            // Recent Submissions
+            renderRecentSubmissions(data.recentSubmissions);
+        }
+
+        function renderThoughtDiagnoses(diagnoses) {
+            const container = document.getElementById('dashboard-thought-diagnoses-container');
+            if (!diagnoses || diagnoses.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; background: rgba(99, 102, 241, 0.06); border: 1px dashed rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🧠</div>
+                        <div style="font-weight: 600; color: var(--accent-indigo); font-size: 0.95rem; margin-bottom: 0.25rem;">
+                            AI Cognitive Thought-Process Engine Active
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 1rem auto; line-height: 1.5;">
+                            When you submit solutions using brute-force, sub-optimal loops, or non-conforming data structures, the AI will diagnose your mental model and provide step-by-step transition guides here.
+                        </div>
+                        <a href="/problems" class="btn btn-secondary btn-sm">Start Solving Problems →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            diagnoses.forEach(d => {
+                const topicName = d.topicName || 'DSA Topic';
+                const count = d.occurrenceCount || 1;
+                html += `
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.25rem; border-left: 4px solid var(--accent-purple); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-weight: 700; color: var(--accent-cyan); font-size: 0.92rem;">
+                                    📌 Topic: ${topicName}
+                                </span>
+                                <span class="badge badge-suboptimal" style="font-size: 0.75rem;">
+                                    ${d.isRecurring ? '🔁 Repeated Issue' : '⚠️ Sub-optimal Approach'}
+                                </span>
+                            </div>
+
+                            <div style="font-weight: 600; color: var(--accent-amber); font-size: 0.88rem; margin-bottom: 0.4rem;">
+                                ${d.specificMistake || 'Sub-optimal Algorithmic Pattern'}
+                            </div>
+
+                            <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 0.6rem;">
+                                <b>Thought Process Analysis:</b> ${d.explanation}
+                            </div>
+
+                            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.65rem 0.85rem; font-size: 0.8rem; color: #a7f3d0; line-height: 1.4;">
+                                <b>🛠️ Optimal Mental Model:</b> ${d.suggestedFix || 'Implement using optimal DSA data structure.'}
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 0.65rem;">
+                            <span style="font-size: 0.78rem; color: var(--text-muted);">
+                                Logged across ${count} attempt${count > 1 ? 's' : ''}
+                            </span>
+                            <a href="/recommendations" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.8rem;">
+                                Practice Optimal Pattern →
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderTopicList(topics) {
+            const container = document.getElementById('topic-list-container');
+            if (!topics || topics.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:3rem 1.5rem;color:var(--text-muted);">
+                        <div style="font-size:2.5rem;margin-bottom:0.75rem;">📊</div>
+                        <div style="font-weight:600;color:var(--text-primary);font-size:1.05rem;margin-bottom:0.35rem;">No Topic Activity Yet</div>
+                        <div style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:1.25rem;line-height:1.5;">
+                            Start submitting solutions from our 100 curated problems to track your accuracy per DSA topic.
+                        </div>
+                        <a href="/problems" class="btn btn-primary btn-sm">Explore 100 Problems →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            topics.forEach(t => {
+                let badge = '';
+                let fillClass = 'med';
+                if (t.accuracyPercentage >= 75) {
+                    fillClass = 'high';
+                    badge = '<span class="topic-badge-strong">Strong Area</span>';
+                } else if (t.accuracyPercentage < 55) {
+                    fillClass = 'low';
+                    badge = '<span class="topic-badge-weak">← Weak Topic</span>';
+                }
+
+                html += `
+                    <div class="topic-row">
+                        <div class="topic-info-main">
+                            <span class="topic-name">${t.topicName}</span>
+                            ${badge}
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill ${fillClass}" style="width: ${Math.max(5, t.accuracyPercentage)}%;"></div>
+                        </div>
+                        <div class="topic-pct" style="color:${fillClass === 'high' ? 'var(--accent-emerald)' : (fillClass === 'low' ? 'var(--accent-rose)' : 'var(--accent-amber)')};">
+                            ${Math.round(t.accuracyPercentage)}%
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderWeaknessSpotlight(weakTopics, allTopics) {
+            const container = document.getElementById('weakness-spotlight-content');
+            if (!weakTopics || weakTopics.length === 0) {
+                container.innerHTML = `
+                    <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 1.25rem;">
+                        <div style="font-weight: 600; color: var(--accent-indigo); font-size: 1rem; margin-bottom: 0.5rem;">
+                            🚀 Welcome to AI DSA Learning!
+                        </div>
+                        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                            Explore our 100 curated problems across 14 DSA topics. Submit your Java solutions to let the AI diagnose mistake patterns and generate your personalized mastery path!
+                        </p>
+                        <a href="/problems" class="btn btn-primary btn-sm">Explore 100 Problems →</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            weakTopics.slice(0, 2).forEach((w, idx) => {
+                const isFirst = idx === 0;
+                const label = isFirst ? 'PRIMARY WEAKNESS' : 'SECONDARY WEAKNESS';
+                const color = isFirst ? 'var(--accent-rose)' : 'var(--accent-amber)';
+                const topicName = typeof w === 'string' ? w : (w.topicName || 'DSA Topic');
+                const mistake = (w && w.primaryMistake) ? w.primaryMistake : 'Boundary condition & logic errors';
+                const acc = (w && w.accuracyPercentage) ? Math.round(w.accuracyPercentage) : 42;
+
+                html += `
+                    <div class="weakness-detail" style="${!isFirst ? 'border-left-color:var(--accent-amber);margin-top:0.75rem;' : ''}">
+                        <div class="weakness-label" style="color:${color};">${label}</div>
+                        <div class="weakness-title" style="color:${color};">${topicName}</div>
+                        <div style="font-size:0.82rem;color:var(--text-muted);">Accuracy: <b>${acc}%</b></div>
+                        <div class="weakness-explanation">Primary issue: ${mistake}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderRecommendations(recs) {
+            const container = document.getElementById('dashboard-recommendations-list');
+            if (!recs || recs.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted);font-size:0.88rem;">Solve more problems to generate adaptive recommendations!</div>';
+                return;
+            }
+
+            let html = '';
+            recs.slice(0, 4).forEach((r, idx) => {
+                html += `
+                    <div style="background:var(--bg-secondary);padding:0.75rem 1rem;border-radius:6px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border-subtle);">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;color:#fff;"><span style="color:var(--text-muted);margin-right:0.35rem;">#${r.problemId}</span>${r.problemTitle}</div>
+                            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">
+                                Target: <b>${r.targetedMistake || 'Conceptual mastery'}</b>
+                            </div>
+                        </div>
+                        <a href="/editor?id=${r.problemId}" class="btn btn-primary btn-sm">Solve →</a>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderRecentSubmissions(subs) {
+            const container = document.getElementById('dashboard-recent-subs');
+            if (!subs || subs.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted);font-size:0.88rem;">No submissions yet. Start practicing!</div>';
+                return;
+            }
+
+            let html = '';
+            subs.slice(0, 5).forEach(s => {
+                let statusClass = 'badge-wrong';
+                let statusText = 'Wrong Answer';
+                if (s.status === 'ACCEPTED') {
+                    statusClass = 'badge-accepted';
+                    statusText = '🎉 Accepted';
+                } else if (s.status === 'SUBOPTIMAL_APPROACH') {
+                    statusClass = 'badge-suboptimal';
+                    statusText = '⚠️ Sub-optimal';
+                } else if (s.status === 'COMPILATION_ERROR') {
+                    statusClass = 'badge-compile';
+                    statusText = '⚠️ Compile Error';
+                } else if (s.status === 'TIME_LIMIT_EXCEEDED') {
+                    statusClass = 'badge-tle';
+                    statusText = '⏱️ TLE';
+                } else if (s.status === 'RESTRICTION_ERROR') {
+                    statusClass = 'badge-restriction';
+                    statusText = '⛔ Restriction';
+                }
+
+                const subtext = (s.status === 'SUBOPTIMAL_APPROACH') ?
+                    `<span style="color:#fbbf24;font-size:0.75rem;">Working logic · Needs ${s.topic ? s.topic.replace('_', ' ') : 'optimal'} pattern</span>` :
+                    `<span style="color:var(--text-muted);font-size:0.78rem;">${s.topic ? s.topic.replace('_', ' ') : 'DSA'}</span>`;
+                
+                html += `
+                    <div style="background:var(--bg-secondary);padding:0.75rem 1rem;border-radius:6px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border-subtle);">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;color:#fff;">${s.problemTitle ? '#' + s.problemId + ' ' + s.problemTitle : ('Problem #' + s.problemId)}</div>
+                            ${subtext}
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <span class="badge ${statusClass}">${statusText}</span>
+                            <a href="/submissions?id=${s.id}" class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;">Inspect 🔍</a>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

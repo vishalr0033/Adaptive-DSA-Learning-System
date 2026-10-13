@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Studio - Adaptive DSA Learning System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="overflow:hidden;">
+    <header class="app-header"></header>
+
+    <div style="padding: 0.75rem 1.5rem; height: calc(100vh - 65px); display: flex; flex-direction: column;">
+        <div class="editor-container" style="flex:1;">
+            <!-- Left Column: Problem Statement -->
+            <div class="editor-pane">
+                <div class="editor-pane-header">
+                    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                        <span id="problem-difficulty" class="badge">EASY</span>
+                        <span id="problem-topic" class="badge badge-topic">ARRAYS</span>
+                        <span id="problem-alt-topics" style="display:flex;gap:0.35rem;flex-wrap:wrap;"></span>
+                    </div>
+                    <a href="/problems" class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem;">← Problems List</a>
+                </div>
+
+                <div class="editor-pane-body">
+                    <h2 id="problem-title" style="font-size: 1.35rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem;">
+                        Loading Problem...
+                    </h2>
+
+                    <div id="problem-approaches-box" style="display:none;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:0.6rem 0.8rem;margin-bottom:1rem;font-size:0.8rem;color:#c7d2fe;line-height:1.4;">
+                    </div>
+
+                    <div id="problem-desc" style="color: var(--text-primary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;"></div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            Example 1:
+                        </h4>
+                        <div style="background: var(--bg-input); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.88rem;">
+                            <div style="color: var(--text-muted);"><b>Input:</b> <span id="example-input" style="color:#cbd5e1;"></span></div>
+                            <div style="color: var(--text-muted); margin-top: 0.35rem;"><b>Output:</b> <span id="example-output" style="color: var(--accent-emerald);"></span></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            Constraints:
+                        </h4>
+                        <ul id="problem-constraints" style="padding-left: 1.25rem; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7;"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Java Code Editor & Runner -->
+            <div class="editor-pane">
+                <!-- Editor Top Toolbar -->
+                <div class="editor-pane-header">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <span style="font-weight:700;font-size:0.88rem;color:var(--accent-cyan);font-family:var(--font-mono);">
+                            ☕ Solution.java
+                        </span>
+                        <span style="font-size:0.75rem;color:var(--text-muted);">(Java 21 / 24)</span>
+                    </div>
+
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <button id="btn-ask-kiwi" onclick="KiwiBot.toggleChat(true)" class="btn btn-sm" style="background:linear-gradient(135deg, #10b981, #059669);color:#fff;font-weight:700;display:flex;align-items:center;gap:0.35rem;box-shadow:0 0 12px rgba(16,185,129,0.3);" title="Open Kiwi AI DSA Mentor">
+                            <span style="font-size:1rem;">🥝</span> Ask Kiwi
+                        </button>
+                        <button onclick="CodeStudio.resetCode()" class="btn btn-secondary btn-sm" title="Reset template">
+                            ↺ Reset
+                        </button>
+                        <button id="btn-run" onclick="CodeStudio.runCode()" class="btn btn-secondary btn-sm" style="color:#fff;background:var(--bg-tertiary);">
+                            ▶ Run Code
+                        </button>
+                        <button id="btn-submit" onclick="CodeStudio.submitCode()" class="btn btn-primary btn-sm" style="font-weight:700;">
+                            🚀 Submit Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Code Textarea -->
+                <div style="flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden;min-height:220px;">
+                    <textarea id="code-editor" class="code-textarea" spellcheck="false" placeholder="// Write your Java Solution here..."></textarea>
+                </div>
+
+                <!-- Bottom Drawer: Testcases & Execution Console -->
+                <div id="bottom-panel-container" style="background:var(--bg-secondary);border-top:1px solid var(--border-card);display:flex;flex-direction:column;max-height:270px;transition:max-height 0.2s ease;">
+                    <!-- Panel Switcher Header -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.35rem 0.75rem;background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+                        <div style="display:flex;align-items:center;gap:0.4rem;">
+                            <button id="tab-btn-testcases" onclick="CodeStudio.switchBottomTab('testcases')" class="btn btn-secondary btn-sm" style="font-size:0.78rem;padding:0.25rem 0.65rem;border-radius:4px;font-weight:600;background:rgba(255,255,255,0.12);color:#fff;">
+                                🧪 Test Cases
+                            </button>
+                            <button id="tab-btn-results" onclick="CodeStudio.switchBottomTab('results')" class="btn btn-secondary btn-sm" style="font-size:0.78rem;padding:0.25rem 0.65rem;border-radius:4px;font-weight:600;color:var(--text-muted);">
+                                📊 Test Results <span id="results-badge" style="display:none;margin-left:4px;"></span>
+                            </button>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <div style="font-size:0.75rem;color:var(--text-muted);">
+                                Sandbox Timeout: 3.0s
+                            </div>
+                            <button id="btn-toggle-bottom" onclick="CodeStudio.toggleBottomPanel()" class="btn btn-secondary btn-sm" style="padding:0.15rem 0.45rem;font-size:0.75rem;color:var(--text-muted);" title="Collapse / Expand Panel">
+                                ⌄ Collapse
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Testcases View Content -->
+                    <div id="testcase-tab-content" style="display:flex;flex-direction:column;overflow:hidden;flex:1;">
+                        <div style="display:flex;gap:0.4rem;padding:0.35rem 0.75rem;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.04);" id="testcase-tabs">
+                            <!-- Case 1, Case 2 tabs -->
+                        </div>
+                        <div id="testcase-body" style="padding:0.75rem 1rem;background:#090d16;font-size:0.85rem;overflow-y:auto;flex:1;">
+                            <!-- Test case input/output view -->
+                        </div>
+                    </div>
+
+                    <!-- Output & AI Diagnosis View Content -->
+                    <div id="output-drawer" class="console-drawer" style="display:none;padding:0.85rem 1rem;background:#090d16;font-size:0.85rem;overflow-y:auto;flex:1;max-height:225px;">
+                        <div style="color:var(--text-muted);font-style:italic;">Run or submit code to see test results and AI diagnostic feedback.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/editor.js"></script>
+    <script src="/js/kiwi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = App.requireAuth('STUDENT');
+            if (!user) return;
+
+            App.renderNav('problems');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const problemId = urlParams.get('id') || '1';
+            CodeStudio.init(problemId);
+        });
+    </script>
+</body>
+</html>
