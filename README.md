@@ -1,6 +1,6 @@
 # AI-Based Personalized Coding Mistake Analysis and Adaptive DSA Learning System
 
-> **Final-Year Project in Computer Science & Engineering**  
+
 > A full-stack, AI-powered educational platform where students practice Data Structures and Algorithms (DSA) in Java, receive root-cause diagnostic feedback on compilation & logic mistakes, detect recurring conceptual patterns, and follow personalized adaptive practice paths.
 
 ---
